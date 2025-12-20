@@ -29,18 +29,16 @@
     }
 
     button {
-        padding: 15px 30px;
-        font-size: 18px;
+        padding: 12px 20px;
+        font-size: 16px;
         cursor: pointer;
         background: linear-gradient(135deg, #ff9800, #f57c00);
         border: none;
-        border-radius: 8px;
+        border-radius: 6px;
         color: white;
         font-weight: bold;
-        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        margin: 0 5px;
         transition: 0.3s;
-        display: block;
-        margin: 0 auto 20px auto;
     }
 
     button:hover {
@@ -99,6 +97,22 @@
         border-radius: 8px;
         border: 2px solid #ff9800;
     }
+
+    #historyContainer {
+        margin-top: 30px;
+    }
+
+    #historyContainer table {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    canvas {
+        margin-top: 20px;
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 10px;
+    }
 </style>
 </head>
 <body>
@@ -117,6 +131,11 @@
 <div id="status" class="status"></div>
 <div id="content"></div>
 
+<div id="historyContainer"></div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 async function loadMarket() {
     const status = document.getElementById("status");
@@ -124,6 +143,7 @@ async function loadMarket() {
 
     status.textContent = "⏳ Lade Marktdaten...";
     content.innerHTML = "";
+    document.getElementById("historyContainer").innerHTML = "";
 
     try {
         const response = await fetch("https://api.opsucht.net/market/prices");
@@ -143,6 +163,7 @@ async function loadMarket() {
                         <th>BUY Orders</th>
                         <th>SELL Preis</th>
                         <th>SELL Orders</th>
+                        <th>Historie</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -162,6 +183,7 @@ async function loadMarket() {
                     <td>${buy.activeOrders ?? "-"}</td>
                     <td class="sell">${sell.price ?? "-"}</td>
                     <td>${sell.activeOrders ?? "-"}</td>
+                    <td><button onclick="showHistory('${item}')">📄 Anzeigen</button></td>
                 `;
                 tbody.appendChild(tr);
             }
@@ -200,6 +222,75 @@ function filterItems() {
             title.style.display = show ? "block" : "none";
         }
     });
+}
+
+let chartInstance = null;
+
+async function showHistory(item) {
+    const container = document.getElementById("historyContainer");
+    container.innerHTML = "<p>⏳ Lade Preishistorie...</p>";
+
+    const safeItem = encodeURIComponent(item.toLowerCase());
+
+    try {
+        const response = await fetch(`https://api.opsucht.net/market/history/${safeItem}`);
+        if (!response.ok) throw new Error("Item nicht gefunden");
+
+        const data = await response.json();
+        if (!data.HOURLY || data.HOURLY.length === 0) {
+            container.innerHTML = "<p>⚠️ Keine Historie verfügbar</p>";
+            return;
+        }
+
+        const lastEntries = data.HOURLY.slice(-20); // letzte 20 Einträge
+        const labels = lastEntries.map(h => new Date(h.timestamp).toLocaleString());
+        const avgPrices = lastEntries.map(h => h.avgPrice);
+
+        container.innerHTML = `
+            <h2>📄 Preishistorie: ${item}</h2>
+            <canvas id="historyChart"></canvas>
+        `;
+
+        const ctx = document.getElementById('historyChart').getContext('2d');
+
+        if (chartInstance) chartInstance.destroy(); // alte Charts entfernen
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Durchschnittspreis',
+                    data: avgPrices,
+                    borderColor: '#ff9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                    tension: 0.2,
+                    fill: true,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        ticks: { color: '#fff', autoSkip: true, maxTicksLimit: 10 },
+                        grid: { color: '#555' }
+                    },
+                    y: {
+                        ticks: { color: '#fff' },
+                        grid: { color: '#555' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#fff' } }
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p>❌ Fehler beim Laden der Preishistorie: ${err.message}</p>`;
+    }
 }
 </script>
 
