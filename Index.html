@@ -8,6 +8,7 @@
 body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); color: #e0e0e0; padding: 25px; min-height: 100vh; }
 h1 { color: var(--accent-color1); text-align: center; font-size: 2.5em; margin-bottom: 25px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
 h2 { margin-top: 40px; color: var(--accent-color1); border-bottom: 3px solid var(--accent-color1); padding-bottom: 8px; font-size: 1.8em; }
+h3 { margin-top: 20px; color: var(--accent-color2); border-bottom: 2px dashed var(--accent-color2); padding-bottom: 5px; font-size: 1.4em; }
 button { padding: 12px 25px; font-size: 16px; cursor: pointer; background: linear-gradient(135deg, var(--accent-color2), #00000044); border: none; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 15px var(--accent-color2); transition: 0.3s; margin: 5px; }
 button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-color2); }
 input[type="text"] { width: 100%; padding: 14px; font-size: 18px; margin-bottom: 30px; border-radius: 8px; border: 2px solid var(--accent-color1); background: #2a2a2a; color: #fff; outline: none; }
@@ -41,7 +42,7 @@ tr:hover { background: #404040; }
     <input type="color" id="accentPicker2" value="#f57c00" style="display:none;">
 </div>
 
-<input type="text" id="searchInput" placeholder="🔍 Item filtern" oninput="filterItems()">
+<input type="text" id="searchInput" placeholder="🔍 Item filtern (Material, Name, Kategorie)" oninput="filterItems()">
 
 <div id="status" class="status"></div>
 <div id="content"></div>
@@ -50,12 +51,12 @@ tr:hover { background: #404040; }
 <script>
 let auctionsData = [];
 let marketData = [];
-let sortByEnd = true; // true: Bald endend, false: Neuste
-let currentView = 'market'; // 'market' oder 'auctions'
+let sortByEnd = true;
+let currentView = 'market';
 let charts = {};
 const uuidCache = {};
 
-// Farbauswahl
+// Accent-Farben
 const accentPicker1 = document.getElementById('accentPicker1');
 const accentPicker2 = document.getElementById('accentPicker2');
 const accentPreview1 = document.getElementById('accentPreview1');
@@ -66,7 +67,6 @@ accentPicker1.addEventListener('input', e => {
     document.documentElement.style.setProperty('--accent-color1', color);
     accentPreview1.style.backgroundColor = color;
     accentPreview1.style.borderColor = color;
-    // Diagramme & Status
     for (const key in charts) {
         charts[key].data.datasets[0].borderColor = color;
         charts[key].data.datasets[0].backgroundColor = color + '33';
@@ -74,19 +74,16 @@ accentPicker1.addEventListener('input', e => {
     }
     document.getElementById('status').style.backgroundColor = color + '33';
 });
-
 accentPicker2.addEventListener('input', e => {
     const color = e.target.value;
     document.documentElement.style.setProperty('--accent-color2', color);
     accentPreview2.style.backgroundColor = color;
     accentPreview2.style.borderColor = color;
-    // Buttons aktualisieren
     document.querySelectorAll('button').forEach(btn => {
         btn.style.background = `linear-gradient(135deg, ${color}, #00000044)`;
         btn.style.boxShadow = `0 4px 15px ${color}`;
     });
 });
-
 accentPreview1.addEventListener('click', () => accentPicker1.click());
 accentPreview2.addEventListener('click', () => accentPicker2.click());
 
@@ -98,8 +95,8 @@ async function uuidToUsername(uuid) {
         const res = await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`);
         const data = await res.json();
         if (data.success) { uuidCache[uuid] = data.data.player.username; return uuidCache[uuid]; }
-        uuidCache[uuid] = "Error"; return "Error";
-    } catch { uuidCache[uuid] = "Error"; return "Error"; }
+        uuidCache[uuid] = "Privat"; return "Privat";
+    } catch { uuidCache[uuid] = "Privat"; return "Privat"; }
 }
 
 // MARKT
@@ -147,19 +144,14 @@ async function loadMarket() {
                     <td>${buy.activeOrders ?? "-"}</td>
                     <td class="sell">${sell.price ?? "-"}</td>
                     <td>${sell.activeOrders ?? "-"}</td>
-                    <td>
-                        <button onclick="showHistory('${item}', this)">📈</button>
-                    </td>
+                    <td><button onclick="showHistory('${item}', this)">📈</button></td>
                 `;
                 tbody.appendChild(tr);
             }
             content.appendChild(table);
         }
         status.textContent = "✅ Marktdaten geladen";
-    } catch (err) {
-        console.error(err);
-        status.textContent = "❌ Fehler beim Laden der Marktdaten";
-    }
+    } catch (err) { console.error(err); status.textContent = "❌ Fehler beim Laden der Marktdaten"; }
 }
 
 // AUKTIONEN
@@ -176,10 +168,7 @@ async function loadAuctions() {
         auctionsData = data;
         displayAuctions();
         status.textContent = "✅ Auktionen geladen";
-    } catch (err) {
-        console.error(err);
-        status.textContent = "❌ Fehler beim Laden der Auktionen";
-    }
+    } catch (err) { console.error(err); status.textContent = "❌ Fehler beim Laden der Auktionen"; }
 }
 
 async function displayAuctions() {
@@ -191,63 +180,139 @@ async function displayAuctions() {
 
     function createTable(items, title) {
         if (!items.length) return;
+        const categories = {};
+        items.forEach(a => {
+            const cat = a.item?.category ?? a.category ?? "Keine Kategorie";
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(a);
+        });
+
         const h2 = document.createElement("h2"); h2.textContent = title; content.appendChild(h2);
 
-        const table = document.createElement("table");
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Custom Name</th>
-                    <th>Verkäufer</th>
-                    <th>Startgebot</th>
-                    <th>Aktuelles Gebot</th>
-                    <th>Aktueller Bieter</th>
-                    <th>Erstellt am</th>
-                    <th>Endet am</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        `;
-        const tbody = table.querySelector("tbody");
+        for (const cat in categories) {
+            const h3 = document.createElement("h3"); h3.textContent = cat; content.appendChild(h3);
 
-        items.forEach(async auction => {
-            const tr = document.createElement("tr");
-            const techName = auction.item?.material ?? "-";
-            const customName = auction.item?.displayName ?? "-";
-            const sellerUuid = auction.seller;
-            const currentBidderUuid = auction.highestBidder;
-            const startBid = auction.startBid ?? "-";
-            const currentBid = auction.currentBid ?? "-";
-
-            const createdDate = new Date(auction.startTime);
-            const createdStr = `${createdDate.getDate().toString().padStart(2,'0')}.${(createdDate.getMonth()+1).toString().padStart(2,'0')}.${createdDate.getFullYear()} ${createdDate.getHours().toString().padStart(2,'0')}:${createdDate.getMinutes().toString().padStart(2,'0')}:${createdDate.getSeconds().toString().padStart(2,'0')} Uhr`;
-
-            const endDate = new Date(auction.endTime);
-            const endStr = `${endDate.getDate().toString().padStart(2,'0')}.${(endDate.getMonth()+1).toString().padStart(2,'0')}.${endDate.getFullYear()} ${endDate.getHours().toString().padStart(2,'0')}:${endDate.getMinutes().toString().padStart(2,'0')}:${endDate.getSeconds().toString().padStart(2,'0')} Uhr`;
-
-            tr.innerHTML = `
-                <td>${techName}</td>
-                <td>${customName}</td>
-                <td class="seller">Lädt...</td>
-                <td class="buy">${startBid}</td>
-                <td class="sell">${currentBid}</td>
-                <td class="bidder">Lädt...</td>
-                <td>${createdStr}</td>
-                <td>${endStr}</td>
+            const table = document.createElement("table");
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Custom Name</th>
+                        <th>Menge</th>
+                        <th>Verkäufer</th>
+                        <th>Startgebot</th>
+                        <th>Aktuelles Gebot</th>
+                        <th>Aktueller Bieter</th>
+                        <th>Erstellt am</th>
+                        <th>Endet am</th>
+                        <th>Diagramm</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             `;
-            tbody.appendChild(tr);
+            const tbody = table.querySelector("tbody");
 
-            uuidToUsername(sellerUuid).then(name => tr.querySelector(".seller").textContent = name);
-            uuidToUsername(currentBidderUuid).then(name => tr.querySelector(".bidder").textContent = name);
-        });
-        content.appendChild(table);
+            categories[cat].forEach(async auction => {
+                const tr = document.createElement("tr");
+                const techName = auction.item?.material ?? "-";
+                const customName = auction.item?.displayName ?? "-";
+                const amount = auction.item?.amount ?? "-";
+                const sellerUuid = auction.seller;
+                const currentBidderUuid = auction.highestBidder;
+                const startBid = auction.startBid ?? "-";
+                const currentBid = auction.currentBid ?? "-";
+
+                const createdDate = new Date(auction.startTime);
+                const createdStr = `${createdDate.getDate().toString().padStart(2,'0')}.${(createdDate.getMonth()+1).toString().padStart(2,'0')}.${createdDate.getFullYear()} ${createdDate.getHours().toString().padStart(2,'0')}:${createdDate.getMinutes().toString().padStart(2,'0')}:${createdDate.getSeconds().toString().padStart(2,'0')} Uhr`;
+
+                const endDate = new Date(auction.endTime);
+                const endStr = `${endDate.getDate().toString().padStart(2,'0')}.${(endDate.getMonth()+1).toString().padStart(2,'0')}.${endDate.getFullYear()} ${endDate.getHours().toString().padStart(2,'0')}:${endDate.getMinutes().toString().padStart(2,'0')}:${endDate.getSeconds().toString().padStart(2,'0')} Uhr`;
+
+                tr.innerHTML = `
+                    <td>${techName}</td>
+                    <td>${customName}</td>
+                    <td>${amount}</td>
+                    <td class="seller">Lädt...</td>
+                    <td class="buy">${startBid}</td>
+                    <td class="sell">${currentBid}</td>
+                    <td class="bidder">Lädt...</td>
+                    <td>${createdStr}</td>
+                    <td>${endStr}</td>
+                    <td><button style="float:right;" onclick='showAuctionBids(${JSON.stringify(auction)}, this)'>📈</button></td>
+                `;
+                tbody.appendChild(tr);
+
+                uuidToUsername(sellerUuid).then(name => tr.querySelector(".seller").textContent = name);
+                uuidToUsername(currentBidderUuid).then(name => tr.querySelector(".bidder").textContent = name);
+            });
+
+            content.appendChild(table);
+        }
     }
 
     createTable(opItems, "OP-Items");
     createTable(normalItems, "Normale Items");
 }
 
+// Auction Bids Chart
+async function showAuctionBids(auction, btn) {
+    let tr = btn.closest("tr");
+    let chartRow = tr.nextElementSibling;
+    if (chartRow && chartRow.classList.contains("chart-row")) { chartRow.remove(); return; }
+
+    const newRow = document.createElement("tr");
+    newRow.classList.add("chart-row");
+    newRow.innerHTML = `<td colspan="10"><canvas class="chart-container"></canvas></td>`;
+    tr.parentNode.insertBefore(newRow, tr.nextSibling);
+
+    const canvas = newRow.querySelector("canvas");
+
+    const bids = auction.bids ?? {};
+    if (!bids || Object.keys(bids).length === 0) return alert("Keine Bids für diese Auktion");
+
+    const sortedBids = Object.entries(bids).sort((a,b) => a[1] - b[1]);
+
+    const playerNames = [];
+    const amounts = [];
+
+    for (const [uuid, amount] of sortedBids) {
+        let name;
+        if (!uuid || uuid === "00000000-0000-0000-0000-000000000000") name = "-";
+        else {
+            name = await uuidToUsername(uuid);
+            if (!name || name === "Privat") name = "Privat";
+        }
+        playerNames.push(name);
+        amounts.push(amount);
+    }
+
+    new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+            labels: playerNames,
+            datasets: [{
+                label: "Gebot",
+                data: amounts,
+                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color1'),
+                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color1')+'33',
+                fill: true,
+                tension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: "Gebotsbetrag" } },
+                x: { title: { display: true, text: "Spieler" } }
+            },
+            animation: { duration: 1000, easing: "easeOutQuart" }
+        }
+    });
+}
+
+// Sortieren
 function toggleSort() {
     sortByEnd = !sortByEnd;
     document.getElementById("sortButton").textContent = sortByEnd ? "Sortieren nach: Bald endend" : "Sortieren nach: Neuste";
@@ -256,7 +321,7 @@ function toggleSort() {
     displayAuctions();
 }
 
-// Erweiterte Suche: Techname + Custom Name
+// Filter
 function filterItems() {
     const search = document.getElementById("searchInput").value.toLowerCase();
     document.querySelectorAll("table").forEach(table => {
@@ -265,14 +330,23 @@ function filterItems() {
         rows.forEach(row => {
             const techName = row.children[0]?.textContent.toLowerCase() ?? "";
             const customName = row.children[1]?.textContent.toLowerCase() ?? "";
-            const match = techName.includes(search) || customName.includes(search);
+            let categoryText = "-";
+            let prev = table.previousElementSibling;
+            while(prev) {
+                if(prev.tagName === "H3" || prev.tagName === "H2") { 
+                    categoryText = prev.textContent.toLowerCase(); 
+                    break; 
+                }
+                prev = prev.previousElementSibling;
+            }
+            const match = techName.includes(search) || customName.includes(search) || categoryText.includes(search);
             row.style.display = match ? "" : "none";
             if (match) visible++;
         });
         const title = table.previousElementSibling;
         const show = visible > 0;
         table.style.display = show ? "table" : "none";
-        if (title && title.tagName === "H2") title.style.display = show ? "block" : "none";
+        if (title && (title.tagName === "H3" || title.tagName === "H2")) title.style.display = show ? "block" : "none";
     });
 }
 
@@ -280,10 +354,8 @@ function filterItems() {
 async function showHistory(itemName, btn) {
     const tr = btn.closest("tr");
     let chartRow = tr.nextElementSibling;
-    if (chartRow && chartRow.classList.contains("chart-row")) {
-        chartRow.remove();
-        return;
-    }
+    if (chartRow && chartRow.classList.contains("chart-row")) { chartRow.remove(); return; }
+
     const chartContainer = document.createElement("tr");
     chartContainer.classList.add("chart-row");
     chartContainer.innerHTML = `<td colspan="6">
@@ -306,21 +378,21 @@ async function updateHistoryChart(itemName, period) {
         const history = data[period];
         const labels = history.map(h => {
             const d = new Date(h.timestamp);
-            if (period === 'HOURLY') return d.getHours() + ':00';
-            if (period === 'DAILY') return d.toLocaleDateString();
-            if (period === 'WEEKLY') return 'KW' + Math.ceil((((d - new Date(d.getFullYear(),0,1))/86400000)+1)/7);
-            if (period === 'MONTHLY') return (d.getMonth()+1) + '.' + d.getFullYear();
+            if (period==='HOURLY') return d.getHours()+':00';
+            if (period==='DAILY') return d.toLocaleDateString();
+            if (period==='WEEKLY') return 'KW'+Math.ceil((((d - new Date(d.getFullYear(),0,1))/86400000)+1)/7);
+            if (period==='MONTHLY') return (d.getMonth()+1)+'.'+d.getFullYear();
             return h.timestamp;
         });
-        const prices = history.map(h => h.avgPrice);
+        const prices = history.map(h=>h.avgPrice);
         const ctx = document.getElementById(`chart-${itemName}`).getContext('2d');
         if (charts[itemName]) charts[itemName].destroy();
         charts[itemName] = new Chart(ctx, {
-            type: 'line',
-            data: { labels, datasets: [{ label: 'Avg Price', data: prices, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color1'), backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color1')+'33', fill:true, tension:0.2 }] },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, animation:{duration:1000,easing:'easeOutQuart'}, scales:{y:{beginAtZero:false}} }
+            type:'line',
+            data:{labels,datasets:[{label:'Avg Price',data:prices,borderColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-color1'),backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--accent-color1')+'33',fill:true,tension:0.2}]},
+            options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:{duration:1000,easing:'easeOutQuart'},scales:{y:{beginAtZero:false}}}
         });
-    } catch(e) { console.error(e); alert('Fehler beim Laden der Preishistorie'); }
+    } catch(e){ console.error(e); alert('Fehler beim Laden der Preishistorie'); }
 }
 </script>
 
