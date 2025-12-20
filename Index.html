@@ -6,7 +6,7 @@
 <style>
 :root {
     --accent-color: #ff9800;
-    --accent-color2: #ff5722;
+    --accent-color2: #f57c00;
 }
 body {
     font-family: Arial, sans-serif;
@@ -15,7 +15,6 @@ body {
     padding: 25px;
     min-height: 100vh;
 }
-
 h1 {
     color: var(--accent-color);
     text-align: center;
@@ -23,7 +22,6 @@ h1 {
     margin-bottom: 25px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
-
 h2 {
     margin-top: 40px;
     color: var(--accent-color);
@@ -31,7 +29,6 @@ h2 {
     padding-bottom: 8px;
     font-size: 1.8em;
 }
-
 button {
     padding: 12px 25px;
     font-size: 16px;
@@ -41,16 +38,14 @@ button {
     border-radius: 8px;
     color: white;
     font-weight: bold;
-    box-shadow: 0 4px 15px var(--accent-color2, rgba(255,87,34,0.4));
+    box-shadow: 0 4px 15px rgba(245,124,0,0.4);
     transition: 0.3s;
     margin: 5px;
 }
-
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--accent-color2, rgba(255,87,34,0.6));
+    box-shadow: 0 6px 20px rgba(245,124,0,0.6);
 }
-
 input[type="text"] {
     width: 100%;
     padding: 14px;
@@ -62,7 +57,6 @@ input[type="text"] {
     color: #fff;
     outline: none;
 }
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -72,25 +66,20 @@ table {
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-
 th, td {
     border: 1px solid #555;
     padding: 12px;
     text-align: center;
 }
-
 th {
     background: #2a2a2a;
     color: var(--accent-color);
     font-size: 16px;
 }
-
 tr:nth-child(even) { background: #333; }
 tr:hover { background: #404040; }
-
 .buy { color: #4caf50; font-weight: bold; }
 .sell { color: #f44336; font-weight: bold; }
-
 .status {
     margin: 15px 0;
     font-style: italic;
@@ -102,19 +91,16 @@ tr:hover { background: #404040; }
     border-radius: 8px;
     border: 2px solid var(--accent-color);
 }
-
 .chart-container {
     width: 100%;
     height: 400px;
     max-height: 400px;
     margin-top: 10px;
 }
-
 .chart-buttons {
     text-align: center;
     margin-bottom: 5px;
 }
-
 /* Accent-Color Picker */
 #accentPickerContainer {
     text-align: center;
@@ -132,8 +118,8 @@ tr:hover { background: #404040; }
     transition: transform 0.2s;
     margin-left:10px;
 }
-#accentPreview { background-color: var(--accent-color); border-color: var(--accent-color);}
-#accentPreview2 { background-color: var(--accent-color2); border-color: var(--accent-color2);}
+#accentPreview { background-color: var(--accent-color); }
+#accentPreview2 { background-color: var(--accent-color2); }
 </style>
 </head>
 <body>
@@ -142,16 +128,14 @@ tr:hover { background: #404040; }
 
 <div id="accentPickerContainer">
     <button onclick="loadMarket()">📊 Alle Items laden</button>
-
     <label for="accentPicker">
         <div id="accentPreview"></div>
     </label>
     <input type="color" id="accentPicker" value="#ff9800" style="display:none;">
-
     <label for="accentPicker2">
         <div id="accentPreview2"></div>
     </label>
-    <input type="color" id="accentPicker2" value="#ff5722" style="display:none;">
+    <input type="color" id="accentPicker2" value="#f57c00" style="display:none;">
 </div>
 
 <input
@@ -171,13 +155,25 @@ const accentPreview = document.getElementById('accentPreview');
 const accentPicker2 = document.getElementById('accentPicker2');
 const accentPreview2 = document.getElementById('accentPreview2');
 
+let charts = {};
+
+function updateButtons() {
+    const buttons = document.querySelectorAll("button");
+    const color1 = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+    const color2 = getComputedStyle(document.documentElement).getPropertyValue('--accent-color2');
+    buttons.forEach(btn => {
+        btn.style.background = `linear-gradient(135deg, ${color1}, ${color2})`;
+        btn.style.boxShadow = `0 4px 15px ${color2}66`;
+    });
+}
+
 accentPicker.addEventListener('input', e => {
     const color = e.target.value;
     document.documentElement.style.setProperty('--accent-color', color);
     accentPreview.style.backgroundColor = color;
     accentPreview.style.borderColor = color;
 
-    // Diagramme mit erster Accentfarbe aktualisieren
+    // Diagramme aktualisieren
     for (const key in charts) {
         charts[key].data.datasets[0].borderColor = color;
         charts[key].data.datasets[0].backgroundColor = color + '33';
@@ -187,27 +183,25 @@ accentPicker.addEventListener('input', e => {
     // Statusbox Hintergrund
     const status = document.getElementById("status");
     status.style.backgroundColor = color + '22';
+
+    // Buttons aktualisieren
+    updateButtons();
+});
+
+accentPicker2.addEventListener('input', e => {
+    const color = e.target.value;
+    document.documentElement.style.setProperty('--accent-color2', color);
+    accentPreview2.style.backgroundColor = color;
+    accentPreview2.style.borderColor = color;
+
+    // Buttons aktualisieren
+    updateButtons();
 });
 
 accentPreview.addEventListener('click', () => accentPicker.click());
+accentPreview2.addEventListener('click', () => accentPicker2.click());
 accentPreview.addEventListener('mouseover', () => accentPreview.style.transform = 'scale(1.1)');
 accentPreview.addEventListener('mouseout', () => accentPreview.style.transform = 'scale(1)');
-
-accentPicker2.addEventListener('input', e => {
-    const color2 = e.target.value;
-    document.documentElement.style.setProperty('--accent-color2', color2);
-    accentPreview2.style.backgroundColor = color2;
-    accentPreview2.style.borderColor = color2;
-
-    // Alle Buttons aktualisieren
-    const buttons = document.querySelectorAll("button");
-    buttons.forEach(btn => {
-        const accent1 = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
-        btn.style.background = `linear-gradient(135deg, ${accent1}, ${color2})`;
-        btn.style.boxShadow = `0 4px 15px ${color2}66`;
-    });
-});
-accentPreview2.addEventListener('click', () => accentPicker2.click());
 accentPreview2.addEventListener('mouseover', () => accentPreview2.style.transform = 'scale(1.1)');
 accentPreview2.addEventListener('mouseout', () => accentPreview2.style.transform = 'scale(1)');
 
@@ -264,6 +258,10 @@ async function loadMarket() {
         }
 
         status.textContent = "✅ Marktdaten geladen";
+        const color1 = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+        status.style.backgroundColor = color1 + '22';
+
+        updateButtons();
 
     } catch (err) {
         console.error(err);
@@ -319,8 +317,6 @@ async function showHistory(itemName, btn) {
     await updateHistoryChart(itemName, 'DAILY');
 }
 
-let charts = {};
-
 async function updateHistoryChart(itemName, period, btn=null) {
     try {
         const response = await fetch(`https://api.opsucht.net/market/history/${itemName}`);
@@ -343,6 +339,7 @@ async function updateHistoryChart(itemName, period, btn=null) {
         });
 
         const prices = history.map(h => h.avgPrice);
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
 
         const ctx = document.getElementById(`chart-${itemName}`).getContext('2d');
         if (charts[itemName]) charts[itemName].destroy();
@@ -353,8 +350,8 @@ async function updateHistoryChart(itemName, period, btn=null) {
                 datasets: [{
                     label: 'Avg Price',
                     data: prices,
-                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color') + '33',
+                    borderColor: color,
+                    backgroundColor: color + '33',
                     fill: true,
                     tension: 0.2
                 }]
