@@ -6,7 +6,9 @@
 <style>
     :root {
         --accent-color: #ff9800;
+        --accent-color2: #f57c00; /* zweite Accentfarbe */
     }
+
     body {
         font-family: Arial, sans-serif;
         background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
@@ -35,7 +37,7 @@
         padding: 12px 25px;
         font-size: 16px;
         cursor: pointer;
-        background: linear-gradient(135deg, var(--accent-color), #f57c00);
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-color2));
         border: none;
         border-radius: 8px;
         color: white;
@@ -43,6 +45,11 @@
         box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
         transition: 0.3s;
         margin: 5px;
+    }
+
+    button.secondary {
+        background: linear-gradient(135deg, var(--accent-color2), #d14f00);
+        box-shadow: 0 4px 15px rgba(241, 76, 0, 0.4);
     }
 
     button:hover {
@@ -105,7 +112,7 @@
     .chart-container {
         width: 100%;
         height: 400px;
-        max-height: 400px; /* Fixierte Höhe */
+        max-height: 400px;
         margin-top: 10px;
     }
 
@@ -114,12 +121,11 @@
         margin-bottom: 5px;
     }
 
-    /* Accent-Color Picker */
     #accentPickerContainer {
         text-align: center;
         margin-bottom: 20px;
     }
-    #accentPreview {
+    #accentPreview, #accentPreview2 {
         display:inline-block;
         width:36px;
         height:36px;
@@ -132,6 +138,10 @@
         transition: transform 0.2s;
         margin-left:10px;
     }
+    #accentPreview2 {
+        border-color: var(--accent-color2);
+        background-color: var(--accent-color2);
+    }
 </style>
 </head>
 <body>
@@ -140,10 +150,18 @@
 
 <div id="accentPickerContainer">
     <button onclick="loadMarket()">📊 Alle Items laden</button>
+
+    <!-- Erster Accent Button -->
     <label for="accentPicker">
         <div id="accentPreview"></div>
     </label>
     <input type="color" id="accentPicker" value="#ff9800" style="display:none;">
+
+    <!-- Zweiter Accent Button -->
+    <label for="accentPicker2">
+        <div id="accentPreview2"></div>
+    </label>
+    <input type="color" id="accentPicker2" value="#f57c00" style="display:none;">
 </div>
 
 <input
@@ -160,6 +178,8 @@
 <script>
 const accentPicker = document.getElementById('accentPicker');
 const accentPreview = document.getElementById('accentPreview');
+const accentPicker2 = document.getElementById('accentPicker2');
+const accentPreview2 = document.getElementById('accentPreview2');
 
 accentPicker.addEventListener('input', e => {
     const color = e.target.value;
@@ -167,16 +187,26 @@ accentPicker.addEventListener('input', e => {
     accentPreview.style.backgroundColor = color;
     accentPreview.style.borderColor = color;
 
-    // Diagramme aktualisieren mit neuer Farbe
+    // Alle Charts aktualisieren
     for (const key in charts) {
-        charts[key].data.datasets[0].borderColor = color;
-        charts[key].data.datasets[0].backgroundColor = color + '33';
+        charts[key].data.datasets[0].borderColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+        charts[key].data.datasets[0].backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color') + '33';
         charts[key].update();
     }
 });
 accentPreview.addEventListener('click', () => accentPicker.click());
 accentPreview.addEventListener('mouseover', () => accentPreview.style.transform = 'scale(1.1)');
 accentPreview.addEventListener('mouseout', () => accentPreview.style.transform = 'scale(1)');
+
+accentPicker2.addEventListener('input', e => {
+    const color = e.target.value;
+    document.documentElement.style.setProperty('--accent-color2', color);
+    accentPreview2.style.backgroundColor = color;
+    accentPreview2.style.borderColor = color;
+});
+accentPreview2.addEventListener('click', () => accentPicker2.click());
+accentPreview2.addEventListener('mouseover', () => accentPreview2.style.transform = 'scale(1.1)');
+accentPreview2.addEventListener('mouseout', () => accentPreview2.style.transform = 'scale(1)');
 
 async function loadMarket() {
     const status = document.getElementById("status");
@@ -321,7 +351,7 @@ async function updateHistoryChart(itemName, period, btn=null) {
                     label: 'Avg Price',
                     data: prices,
                     borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color') + '33',
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color2') + '33',
                     fill: true,
                     tension: 0.2
                 }]
