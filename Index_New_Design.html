@@ -6,29 +6,135 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root { --accent-color1: #ff9800; --accent-color2: #f57c00; }
-body { font-family: Arial, sans-serif; background: linear-gradient(135deg,#2d2d2d 0%,#1a1a1a 100%); color:#e0e0e0; padding:25px; min-height:100vh; }
-h1 { color:var(--accent-color1); text-align:center; font-size:2.5em; margin-bottom:15px; text-shadow:2px 2px 4px rgba(0,0,0,0.5);}
-button { padding:10px 20px; font-size:16px; cursor:pointer; background:linear-gradient(135deg,var(--accent-color2),#00000044); border:none; border-radius:50px; color:white; font-weight:bold; box-shadow:0 4px 15px var(--accent-color2); transition:0.3s; margin:5px;}
-button:hover { transform:translateY(-2px); box-shadow:0 6px 20px var(--accent-color2); }
-input[type="text"] { width:100%; padding:14px; font-size:18px; margin-bottom:30px; border-radius:8px; border:2px solid var(--accent-color1); background:#2a2a2a; color:#fff; outline:none; }
-.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-.card { background:#2a2a2a; border-radius:12px; padding:15px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.4);}
-.card img { width:64px; height:64px; cursor:pointer;}
-.card h3 { color:var(--accent-color1); font-size:15px; }
+:root { 
+    --accent-color1: #ff9800; /* Primäre Akzentfarbe (Buttons, Überschriften, Charts) */
+    --accent-color2: #f57c00; /* Sekundäre Akzentfarbe (Hover, Box-Shadow, Buttons) */
+}
+body { 
+    font-family: Arial, sans-serif; 
+    background: linear-gradient(135deg,#2d2d2d 0%,#1a1a1a 100%); 
+    color:#e0e0e0; 
+    padding:25px; 
+    min-height:100vh; 
+}
+h1 { 
+    color:var(--accent-color1); 
+    text-align:center; 
+    font-size:2.5em; 
+    margin-bottom:15px; 
+    text-shadow:2px 2px 4px rgba(0,0,0,0.5);
+}
+button { 
+    padding:10px 20px; 
+    font-size:16px; 
+    cursor:pointer; 
+    background:linear-gradient(135deg,var(--accent-color2),#00000044); 
+    border:none; 
+    border-radius:50px; 
+    color:white; 
+    font-weight:bold; 
+    box-shadow:0 4px 15px var(--accent-color2); 
+    transition:0.3s; 
+    margin:5px;
+}
+button:hover { 
+    transform:translateY(-2px); 
+    box-shadow:0 6px 20px var(--accent-color2); 
+}
+input[type="text"] { 
+    width:100%; 
+    padding:14px; 
+    font-size:18px; 
+    margin-bottom:30px; 
+    border-radius:8px; 
+    border:2px solid var(--accent-color1); 
+    background:#2a2a2a; 
+    color:#fff; 
+    outline:none; 
+}
+.grid { 
+    display:grid; 
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); 
+    gap:20px; 
+}
+.card { 
+    background:#2a2a2a; 
+    border-radius:12px; 
+    padding:15px; 
+    text-align:center; 
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+}
+.card img { 
+    width:64px; 
+    height:64px; 
+    cursor:pointer;
+}
+.card h3 { 
+    color:var(--accent-color1); 
+    font-size:15px; 
+}
 .buy { color:#4caf50; }
 .sell { color:#f44336; }
 
 /* MODAL */
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); justify-content:center; align-items:center; z-index:999; }
-.modal-content { background:#222; border-radius:12px; width:90%; max-width:800px; padding:20px; position:relative; }
-.close { position:absolute; right:15px; top:10px; cursor:pointer; color:var(--accent-color1); font-size:22px; }
-.chart-buttons { text-align:right; margin-bottom:10px; }
-.chart-buttons button { margin:5px; padding:8px 14px; border-radius:20px; border:none; background:var(--accent-color1); font-weight:bold; cursor:pointer;}
-canvas { height:400px !important; }
+.modal { 
+    display:none; 
+    position:fixed; 
+    inset:0; 
+    background:rgba(0,0,0,0.75); 
+    justify-content:center; 
+    align-items:center; 
+    z-index:999; 
+}
+.modal-content { 
+    background:#222; 
+    border-radius:12px; 
+    width:90%; 
+    max-width:800px; 
+    padding:20px; 
+    position:relative; 
+}
+.close { 
+    position:absolute; 
+    right:15px; 
+    top:10px; 
+    cursor:pointer; 
+    color:var(--accent-color1); 
+    font-size:22px; 
+}
+.chart-buttons { 
+    text-align:right; 
+    margin-bottom:10px; 
+}
+.chart-buttons button { 
+    margin:5px; 
+    padding:8px 14px; 
+    border-radius:20px; 
+    border:none; 
+    background: linear-gradient(135deg, var(--accent-color2), #00000044); /* Verlauf wie die Hauptbuttons */
+    font-weight:bold; 
+    cursor:pointer;
+    color: white;
+    transition: 0.3s;
+}
+.chart-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-color2);
+}
+
+}
+canvas { 
+    height:400px !important; 
+}
 
 /* Tabs */
-#tabs { text-align:center; margin-bottom:25px; }
+#tabs { 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    gap:15px; 
+    margin-bottom:25px;
+}
 .section { display:none; }
 .section.active { display:block; }
 </style>
@@ -40,7 +146,85 @@ canvas { height:400px !important; }
 <div id="tabs">
     <button onclick="showSection('market')">Markt</button>
     <button onclick="showSection('auctions')">Auktionen</button>
+
+    <!-- Farbwahl Buttons -->
+    <div style="display:flex; gap:10px; align-items:center;">
+  <!-- Custom Color Button für Accent 1 -->
+  <div id="customColor1" 
+       onclick="document.getElementById('hiddenColor1').click()" 
+       style="width:32px; height:32px; border-radius:50%; background:#ff9800; cursor:pointer; border:2px solid #fff;"></div>
+  <input type="color" id="hiddenColor1" value="#ff9800" 
+         style="display:none;" 
+         onchange="changeAccentColor(1, this.value); document.getElementById('customColor1').style.background=this.value;">
+  
+  <!-- Custom Color Button für Accent 2 -->
+  <div id="customColor2" 
+       onclick="document.getElementById('hiddenColor2').click()" 
+       style="width:32px; height:32px; border-radius:50%; background:#f57c00; cursor:pointer; border:2px solid #fff;"></div>
+  <input type="color" id="hiddenColor2" value="#f57c00" 
+         style="display:none;" 
+         onchange="changeAccentColor(2, this.value); document.getElementById('customColor2').style.background=this.value;">
 </div>
+</div>
+
+<script>
+function changeAccentColor(accentNumber, color) {
+    if(accentNumber === 1) {
+        document.documentElement.style.setProperty('--accent-color1', color);
+        if(chart) {
+            chart.data.datasets[0].borderColor = color;
+            chart.data.datasets[0].backgroundColor = color + "33";
+            chart.update();
+        }
+    } else if(accentNumber === 2) {
+        document.documentElement.style.setProperty('--accent-color2', color);
+
+        // Tabs-Buttons (Markt & Auktionen)
+        document.querySelectorAll('#tabs > button').forEach(btn=>{
+            btn.style.background = `linear-gradient(135deg, ${color}, ${hexToRgba(color,0.27)})`;
+            btn.style.boxShadow = `0 4px 15px ${color}`;
+        });
+
+        // Chart-Buttons
+        document.querySelectorAll('.chart-buttons button').forEach(btn=>{
+            btn.style.background = `linear-gradient(135deg, ${color}, ${hexToRgba(color,0.27)})`;
+        });
+    }
+}
+
+// Beim Laden die gespeicherten Farben setzen
+window.addEventListener('DOMContentLoaded', ()=>{
+    const savedColor1 = localStorage.getItem('accentColor1');
+    const savedColor2 = localStorage.getItem('accentColor2');
+
+    if(savedColor1) {
+        document.getElementById('colorPicker1').value = savedColor1;
+        changeAccentColor(1, savedColor1);
+    }
+    if(savedColor2) {
+        document.getElementById('colorPicker2').value = savedColor2;
+        changeAccentColor(2, savedColor2);
+    }
+});
+
+// Hilfsfunktion: HEX → rgba
+function hexToRgba(hex, alpha) {
+    let c;
+    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+        c= hex.substring(1).split('');
+        if(c.length== 3){
+            c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c= '0x'+c.join('');
+        return 'rgba('+[(c>>16)&255,(c>>8)&255,c&255].join(',')+','+alpha+')';
+    }
+    throw new Error('Invalid HEX');
+}
+</script>
+
+
+
+</script>
 
 <!-- MARKT -->
 <div id="market" class="section">
@@ -49,11 +233,11 @@ canvas { height:400px !important; }
 </div>
 
 <!-- AUKTIONEN -->
-<div style="text-align:right; margin-bottom:10px;">
-    <button id="auctionSortBtn" onclick="toggleAuctionSort()">Sortieren nach: Bald endend</button>
-</div>
 <div id="auctions" class="section">
-    <input type="text" id="searchAuctions" placeholder="🔍 Item oder Kategorie suchen …" oninput="renderAuctions()">
+    <div style="text-align:right; margin-bottom:10px;">
+        <button id="auctionSortBtn" onclick="toggleAuctionSort()">Sortieren nach: Bald endend</button>
+    </div>
+    <input type="text" id="searchAuctions" placeholder="🔍 Item oder Kategorie/Name suchen …" oninput="renderAuctions()">
     <div id="auctionContainer"></div>
 </div>
 
@@ -73,38 +257,29 @@ canvas { height:400px !important; }
 </div>
 
 <script>
-let auctionSortMode = "END"; // "END" = Bald endend, "NEW" = Neueste zuerst
+let auctionSortMode = "END";
 let marketPrices = {}, marketItems = [], auctionsData = [];
 let currentItem = null, chart=null;
 const uuidCache = {};
-
 
 function toggleAuctionSort() {
     auctionSortMode = auctionSortMode === "END" ? "NEW" : "END";
     const btn = document.getElementById("auctionSortBtn");
     btn.textContent = "Sortieren nach: " + (auctionSortMode === "END" ? "Bald endend" : "Neueste");
-    renderAuctions(); // Auktionen neu rendern nach der neuen Sortierung
+    renderAuctions();
 }
-
-
 
 function closeModal() {
     document.getElementById("chartModal").style.display = "none";
-    currentItem = null;        // Reset current item
-    if (chart) {
-        chart.destroy();       // Chart löschen
-        chart = null;
-    }
+    currentItem = null;
+    if(chart) { chart.destroy(); chart=null; }
 }
 
-
-// Tabs
 function showSection(id){
     document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// UUID → Username
 async function uuidToUsername(uuid) {
     if(!uuid) return "-";
     if(uuidCache[uuid]) return uuidCache[uuid];
@@ -116,44 +291,36 @@ async function uuidToUsername(uuid) {
     }catch{uuidCache[uuid]="privat"; return "privat";}
 }
 
-// Markt laden
+// Markt
 async function loadMarket(){
     marketPrices=await (await fetch("https://api.opsucht.net/market/prices")).json();
     marketItems=await (await fetch("https://api.opsucht.net/market/items")).json();
     renderMarket();
 }
 
-// Markt rendern
 function renderMarket() {
     const container = document.getElementById("marketContainer");
     const search = document.getElementById("searchMarket").value.toLowerCase();
     container.innerHTML = "";
 
-    for (const category in marketPrices) {
+    for(const category in marketPrices){
         const itemsInCategory = Object.keys(marketPrices[category])
-            .filter(material => 
-                material.toLowerCase().includes(search) || category.toLowerCase().includes(search)
-            );
+            .filter(material => material.toLowerCase().includes(search) || category.toLowerCase().includes(search));
+        if(itemsInCategory.length === 0) continue;
 
-        if (itemsInCategory.length === 0) continue; // keine Treffer in dieser Kategorie
-
-        const h2 = document.createElement("h2");
-        h2.textContent = category;
+        const h2 = document.createElement("h2"); h2.textContent = category;
         container.appendChild(h2);
 
-        const grid = document.createElement("div");
-        grid.className = "grid";
+        const grid = document.createElement("div"); grid.className="grid";
 
-        for (const material of itemsInCategory) {
-            const item = marketItems.find(i => i.material === material);
-            if (!item) continue;
-
+        for(const material of itemsInCategory){
+            const item = marketItems.find(i=>i.material===material);
+            if(!item) continue;
             const orders = marketPrices[category][material];
-            const buy = orders.find(o => o.orderSide === "BUY") || {};
-            const sell = orders.find(o => o.orderSide === "SELL") || {};
+            const buy = orders.find(o=>o.orderSide==="BUY")||{};
+            const sell = orders.find(o=>o.orderSide==="SELL")||{};
 
-            const card = document.createElement("div");
-            card.className = "card";
+            const card = document.createElement("div"); card.className="card";
             card.innerHTML = `
                 <img src="${item.icon}" onclick="openChart('${material}')">
                 <h3>${material}</h3>
@@ -162,18 +329,16 @@ function renderMarket() {
             `;
             grid.appendChild(card);
         }
-
         container.appendChild(grid);
     }
 }
 
-// Auktionen laden
+// Auktionen
 async function loadAuctions(){
     auctionsData=await (await fetch("https://api.opsucht.net/auctions/active")).json();
     renderAuctions();
 }
 
-// Auktionen rendern
 async function renderAuctions() {
     const container = document.getElementById("auctionContainer");
     const search = document.getElementById("searchAuctions").value.toLowerCase();
@@ -182,45 +347,35 @@ async function renderAuctions() {
     const categories = {};
     auctionsData.forEach(a => {
         const cat = a.item?.category ?? "Auktionen";
-        if (!categories[cat]) categories[cat] = [];
+        if(!categories[cat]) categories[cat]=[];
         categories[cat].push(a);
     });
 
-    for (const cat in categories) {
-        // Filter nach Suchbegriff: Kategorie, technischer Name, Custom Name
+    for(const cat in categories){
         let auctionsInCategory = categories[cat].filter(a => {
             const displayName = a.item.displayName ?? "";
             const material = a.item.material ?? "";
-            return (
-                cat.toLowerCase().includes(search) ||
-                displayName.toLowerCase().includes(search) ||
-                material.toLowerCase().includes(search)
-            );
+            return cat.toLowerCase().includes(search) ||
+                   displayName.toLowerCase().includes(search) ||
+                   material.toLowerCase().includes(search);
         });
+        if(auctionsInCategory.length===0) continue;
 
-        if (auctionsInCategory.length === 0) continue; // keine Treffer in dieser Kategorie
-
-        // Sortieren nach Modus
-        if (auctionSortMode === "END") {
-            auctionsInCategory.sort((a, b) => new Date(a.endTime) - new Date(b.endTime)); // Bald endend
+        if(auctionSortMode==="END"){
+            auctionsInCategory.sort((a,b)=>new Date(a.endTime)-new Date(b.endTime));
         } else {
-            auctionsInCategory.sort((a, b) => new Date(b.startTime) - new Date(a.startTime)); // Neueste zuerst
+            auctionsInCategory.sort((a,b)=>new Date(b.startTime)-new Date(a.startTime));
         }
 
-        const h2 = document.createElement("h2");
-        h2.textContent = cat;
+        const h2 = document.createElement("h2"); h2.textContent=cat;
         container.appendChild(h2);
+        const grid = document.createElement("div"); grid.className="grid";
 
-        const grid = document.createElement("div");
-        grid.className = "grid";
-
-        for (const a of auctionsInCategory) {
+        for(const a of auctionsInCategory){
             const displayName = a.item.displayName ?? a.item.material;
-            const card = document.createElement("div");
-            card.className = "card";
+            const card = document.createElement("div"); card.className="card";
             card.innerHTML = `
-                <img src="${a.item.icon}" 
-                     onclick='openAuctionChart(${JSON.stringify(a)})' 
+                <img src="${a.item.icon}" onclick='openAuctionChart(${JSON.stringify(a)})' 
                      onerror="this.src='https://i.postimg.cc/LXLWtvLT/geldbeutel.png'">
                 <h3>${displayName}</h3>
                 <div class="buy">Start: ${a.startBid}</div>
@@ -229,16 +384,11 @@ async function renderAuctions() {
             `;
             grid.appendChild(card);
         }
-
         container.appendChild(grid);
     }
 }
 
-
-// MODAL
-function closeModal(){ document.getElementById("chartModal").style.display="none"; if(chart) chart.destroy(); }
-
-// Markt History
+// Modal + Charts
 async function loadHistory(period){
     if(!currentItem) return;
     const data=await (await fetch(`https://api.opsucht.net/market/history/${currentItem}`)).json();
@@ -253,68 +403,52 @@ async function loadHistory(period){
     const pricesData=history.map(h=>h.avgPrice);
     const ctx=document.getElementById("priceChart").getContext("2d");
     if(chart) chart.destroy();
+
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color1').trim();
+
     chart=new Chart(ctx,{
         type:"line",
-        data:{labels,datasets:[{data:pricesData,borderColor:"#ff9800",backgroundColor:"#ff980033",fill:true,tension:0.2}]},
+        data:{labels,datasets:[{data:pricesData,borderColor:accentColor,backgroundColor:accentColor+"33",fill:true,tension:0.2}]},
         options:{responsive:true,plugins:{legend:{display:false}}}
     });
 }
 
-function openChart(material){ currentItem=material; document.getElementById("modalTitle").textContent=material; document.getElementById("chartModal").style.display="flex"; loadHistory("DAILY"); }
-
-
-// Markt Chart
-function openChart(material) {
-    currentItem = material;
+function openChart(material){
+    currentItem=material;
     document.getElementById("modalTitle").textContent = material;
     document.getElementById("chartModal").style.display = "flex";
-
-    // Chart-Buttons nur für den Markt einblenden
     document.querySelector(".chart-buttons").style.display = "block";
-
-    // Auktion-Details ausblenden, falls vorhanden
     const detailsDiv = document.getElementById("auctionDetails");
     if(detailsDiv) detailsDiv.style.display = "none";
-
     loadHistory("DAILY");
 }
 
-
-// Auktion Chart
 async function openAuctionChart(auction){
-    currentItem = null;
+    currentItem=null;
     document.getElementById("modalTitle").textContent = auction.item.displayName ?? auction.item.material;
     document.getElementById("chartModal").style.display = "flex";
-
-    // Chart-Buttons für Auktionen ausblenden
     document.querySelector(".chart-buttons").style.display = "none";
 
-    // Verkäufer, Start- und Endzeit im Modal einfügen
     const seller = auction.seller ? await uuidToUsername(auction.seller) : "-";
     const startTime = new Date(auction.startTime).toLocaleString("de-DE");
     const endTime = new Date(auction.endTime).toLocaleString("de-DE");
 
-    // Prüfen, ob Details schon existieren, sonst erstellen
     let detailsDiv = document.getElementById("auctionDetails");
     if(!detailsDiv){
         detailsDiv = document.createElement("div");
-        detailsDiv.id = "auctionDetails";
-        detailsDiv.style.marginBottom = "15px";
-        detailsDiv.style.fontSize = "14px";
-        detailsDiv.style.color = "#eee";
+        detailsDiv.id="auctionDetails";
+        detailsDiv.style.marginBottom="15px";
+        detailsDiv.style.fontSize="14px";
+        detailsDiv.style.color="#eee";
         document.querySelector(".modal-content").insertBefore(detailsDiv, document.getElementById("priceChart"));
     }
-    detailsDiv.innerHTML = `
-        Verkäufer: ${seller}<br>
-        Startzeit: ${startTime}<br>
-        Endzeit: ${endTime}
-    `;
+    detailsDiv.style.display="block";
+    detailsDiv.innerHTML=`Verkäufer: ${seller}<br>Startzeit: ${startTime}<br>Endzeit: ${endTime}`;
 
     const bids = auction.bids || {};
-    const sortedBids = Object.entries(bids).sort((a,b) => a[1]-b[1]);
-    const playerNames = [];
-    const amounts = [];
-    for(const [uuid, amount] of sortedBids){
+    const sortedBids = Object.entries(bids).sort((a,b)=>a[1]-b[1]);
+    const playerNames = [], amounts = [];
+    for(const [uuid,amount] of sortedBids){
         const name = await uuidToUsername(uuid);
         playerNames.push(name);
         amounts.push(amount);
@@ -322,14 +456,11 @@ async function openAuctionChart(auction){
 
     const ctx = document.getElementById("priceChart").getContext("2d");
     if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-        type: "line",
-        data: { labels: playerNames, datasets:[{data: amounts, borderColor:"#ff9800", backgroundColor:"#ff980033", fill:true, tension:0.2}] },
-        options: {
-            responsive:true,
-            plugins:{ legend:{ display:false } },
-            scales:{ y:{ beginAtZero:true, title:{display:true,text:"Gebotsbetrag"} }, x:{ title:{ display:true, text:"Spieler"} } }
-        }
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color1').trim();
+    chart = new Chart(ctx,{
+        type:"line",
+        data:{labels:playerNames,datasets:[{data:amounts,borderColor:accentColor,backgroundColor:accentColor+"33",fill:true,tension:0.2}]},
+        options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:"Gebotsbetrag"}},x:{title:{display:true,text:"Spieler"}}}}
     });
 }
 
